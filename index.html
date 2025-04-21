@@ -1,1 +1,144 @@
-<!-- Final enhanced HTML content with Comic Sans, rounded boxes, tooltips, canvas drawing, and Mars view will be restored here -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mission to Mars: Suit Up and Step Into the Red Planet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body { font-family: 'Comic Sans MS', sans-serif; background: #0e1a24; color: white; margin: 0; padding: 0; }
+    header, footer { text-align: center; padding: 1rem; border-radius: 20px; background: #111; }
+    main { padding: 2rem; position: relative; }
+    button { background: #e1a948; color: #000; border: none; border-radius: 12px; padding: 0.5rem 1rem; cursor: pointer; }
+    iframe { width: 100%; height: 400px; border: none; border-radius: 12px; margin-top: 1rem; }
+    textarea { width: 100%; height: 80px; margin-top: 1rem; background: #fff; color: #000; padding: 0.5rem; }
+
+    #openQuiz, #openCanvas {
+      position: absolute; top: 40px; z-index: 10;
+      padding: 0.5rem 1rem; font-weight: bold; border-radius: 5px;
+    }
+
+    #openQuiz { right: 140px; }
+    #openCanvas { right: 30px; }
+
+    #quizBox, #canvasBox {
+      display: none; position: fixed; top: 100px; left: 50%;
+      transform: translateX(-50%);
+      background: #fff; color: #000; padding: 1rem; border-radius: 20px; border-radius: 10px;
+      z-index: 999; max-width: 360px; box-shadow: 0 0 10px #000;
+    }
+
+    #quizBox h3, #canvasBox h3 { margin-top: 0; }
+    #quizBox button, #canvasBox button { margin-top: 0.5rem; }
+    canvas { border: 1px solid #000; background: #fff; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Mission to Mars</h1>
+  <p>Suit Up and Step Into the Red Planet</p>
+  <p><strong>Presented by The Curator Club | GMIS Semarang</strong></p>
+</header>
+
+<div class="audio-wrapper" style="text-align:center;">
+  <audio autoplay loop controls>
+    <source src="https://freesound.org/data/previews/661/661098_1648170-lq.mp3" type="audio/mpeg">
+  </audio>
+</div>
+
+<main>
+  <button id="openQuiz">Quiz</button>
+  <button id="openCanvas">Draw</button>
+
+  <model-viewer src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+    ar camera-controls auto-rotate style="width: 100%; height: 500px;" alt="Astronaut 3D model">
+    <div slot="hotspot-1" data-position="0.2m 1.5m 0.3m" data-normal="0m 1m 0m">
+      <div class="annotation">Helmet: Provides oxygen and visibility</div>
+    </div>
+    <div slot="hotspot-2" data-position="0m 1.1m 0.2m" data-normal="0m 1m 0m">
+      <div class="annotation">Suit: Pressurized protection from Mars' atmosphere</div>
+    </div>
+  </model-viewer>
+
+  <div id="quizBox">
+    <h3>Why do astronauts need suits on Mars?</h3>
+    <form onsubmit="event.preventDefault(); submitQuiz();">
+      <label><input type="radio" name="q1" value="1"> To look cool</label><br>
+      <label><input type="radio" name="q1" value="2"> To stay warm</label><br>
+      <label><input type="radio" name="q1" value="3"> To protect from Mars environment</label><br>
+      <button type="submit">Submit</button>
+    </form>
+    <p id="quizFeedback" style="margin-top:0.5rem;"></p>
+  </div>
+
+  <div id="canvasBox">
+    <h3>Draw Your Idea of Mars!</h3>
+    <canvas id="drawCanvas" width="320" height="200"></canvas><br>
+    <button onclick="clearCanvas()">Clear</button>
+  </div>
+
+  <h2>Explore the Martian Surface</h2>
+  <iframe src="https://www.360cities.net/embed_iframe/curiosity-rover-selfie"></iframe>
+
+  <h2>Reflection Journal</h2>
+  <textarea id="reflection" placeholder="What surprised you most about exploring Mars?"></textarea>
+  <button onclick="saveReflection()">Save Reflection</button>
+</main>
+
+<footer>
+  <p>National Portrait Gallery, Smithsonian Institution</p>
+  <p>8th and G Streets NW, Washington, DC 20001</p>
+</footer>
+
+<script>
+  document.getElementById('openQuiz').onclick = () => {
+    const box = document.getElementById('quizBox');
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  };
+  document.getElementById('openCanvas').onclick = () => {
+    const box = document.getElementById('canvasBox');
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  };
+
+  function submitQuiz() {
+    const selected = document.querySelector('input[name="q1"]:checked');
+    const feedback = document.getElementById('quizFeedback');
+    if (selected) {
+      feedback.innerText = selected.value === "3" ? "Correct! Suits protect against Mars' harsh environment." : "Not quite. Try again!";
+    } else {
+      feedback.innerText = "Please select an answer.";
+    }
+  }
+
+  function saveReflection() {
+    const reflection = document.getElementById('reflection').value;
+    localStorage.setItem('marsReflection', reflection);
+    alert('Your reflection has been saved in this browser.');
+  }
+
+  const canvas = document.getElementById("drawCanvas");
+  const ctx = canvas.getContext("2d");
+  let drawing = false;
+
+  canvas.onmousedown = () => { drawing = true };
+  canvas.onmouseup = () => { drawing = false; ctx.beginPath(); };
+  canvas.onmousemove = draw;
+
+  function draw(e) {
+    if (!drawing) return;
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#000";
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  }
+
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+</body>
+</html>
